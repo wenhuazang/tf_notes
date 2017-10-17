@@ -14,7 +14,7 @@ convert raw data to tfrecords, which is a binary file for tensorflow. It can tak
 
 1. make filename queue
 2. parse and decode data into another queue
-3. return batch data(shuffle and not shuffle)
+3. return batch data(shuffle or not shuffle)
 
 
 
