@@ -3,6 +3,7 @@ import tensorflow as tf
 import numpy as np
 import os
 from utils import load_amazon
+import pprint
 
 
 # =============================================================================#
@@ -26,42 +27,8 @@ def text2tfrecords(output_dir, output_name, train, X, Y):
     writer.close()
 
 
-def read():
-    # Read TFRecords file
-    # current_path = os.getcwd()
-    save_data_dir = 'data/Amazon_review/'
-    tfrecords_file_name = "train.books"
-    input_file = os.path.join(save_data_dir, tfrecords_file_name)
-
-    # Constrain the data to print
-    max_print_number = 2002
-    print_number = 1
-
-    for serialized_example in tf.python_io.tf_record_iterator(input_file):
-        # Get serialized example from file
-        example = tf.train.Example()
-        example.ParseFromString(serialized_example)
-
-        # Read data in specified format
-        label = example.features.feature["Y"].float_list.value
-        features = example.features.feature["X"].float_list.value
-        # print("Number: {}, label: {}, features: {}".format(print_number, label,
-        #                                                    features))
-        # print np.array(features).shape
-        if np.array(features).shape == (5000,):
-            pass
-        else:
-            print 'wrong'
-            exit()
-        # Return when reaching max print number
-        if print_number > max_print_number:
-            exit()
-        else:
-            print_number += 1
-
-
-def decode_from_tfrecords(output_dir, output_name, shuffle, batch_size):
-    _type = 'train.' if train else 'test.'
+def decode_from_tfrecords(output_dir, output_name, is_train, shuffle, batch_size):
+    _type = 'train.' if is_train else 'test.'
     output_file = os.path.join(output_dir, _type + output_name)
     filename_queue = tf.train.string_input_producer([output_file], num_epochs=None)
     reader = tf.TFRecordReader()
@@ -92,29 +59,36 @@ def decode_from_tfrecords(output_dir, output_name, shuffle, batch_size):
     return x, y
 
 # =============================================================================#
-flag = 3
-train = True
-if __name__ == '__main__':
-    output_dir = 'data/Amazon_review/'
-    input_dir = './data/'
+flags = tf.app.flags
+flags.DEFINE_integer('flag', 1, "Flag to write or read [1 write, 2 read]")
+flags.DEFINE_integer("batch_size", 64, "The size of batch images [64]")
+flags.DEFINE_string("output_dir", "data/Amazon_review/", "The directory name to save data")
+flags.DEFINE_string("input_dir", "./data/", "The Directory name to input data")
+flags.DEFINE_string("input_name", "books", "The name to input data")
+flags.DEFINE_boolean("is_shuffle", True, "True for shuffle, false for not [shuffle]")
+flags.DEFINE_boolean("is_train", True, "True for training, False for testing [True]")
 
-    input_name = 'books'
-    input_suffix = '_train.svmlight' if train else '_test.svmlight'
+FLAGS = flags.FLAGS
+pp = pprint.PrettyPrinter()
 
-    if not os.path.exists(output_dir):
-        os.mkdir(output_dir)
-    xs, ys = load_amazon(input_name, input_dir, input_suffix)
 
-    if flag == 1:
-        text2tfrecords(output_dir, input_name, train, xs, ys)
-    elif flag == 2:
-        read()
-    elif flag == 3:
+def main(_):
+    pp.pprint(flags.FLAGS.__flags)
+    input_suffix = '_train.svmlight' if FLAGS.is_train else '_test.svmlight'
 
-        train_data, train_label = decode_from_tfrecords(output_dir,
-                                                        output_name=input_name,
-                                                        shuffle=False,
-                                                        batch_size=64)
+    if not os.path.exists(FLAGS.output_dir):
+        os.mkdir(FLAGS.output_dir)
+
+    if FLAGS.flag == 1:
+        # load data
+        xs, ys = load_amazon(FLAGS.input_name, FLAGS.input_dir, input_suffix)
+        text2tfrecords(FLAGS.output_dir, FLAGS.input_name, FLAGS.is_train, xs, ys)
+    elif FLAGS.flag == 2:
+        train_data, train_label = decode_from_tfrecords(FLAGS.output_dir,
+                                                        output_name=FLAGS.input_name,
+                                                        is_train=FLAGS.is_train,
+                                                        shuffle=FLAGS.is_shuffle,
+                                                        batch_size=FLAGS.batch_size)
         with tf.Session() as sess:
             init_op = tf.global_variables_initializer()
             sess.run(init_op)
@@ -123,15 +97,18 @@ if __name__ == '__main__':
 
             try:
                 # while not coord.should_stop():
-                for i in range(3):
+                for i in range(1):
                     example, l = sess.run([train_data, train_label])
-                    print 'example: ', example[0].shape
-                    print example[0]
-                    print l[0]
+                    print 'example shape: ', example[0].shape
+                    print 'example[0] data', example[0]
+                    print 'label[0]:', l[0]
             except tf.errors.OutOfRangeError:
                 print('Done reading')
             finally:
                 coord.request_stop()
                 coord.join(threads)
     else:
-        pass
+        print 'flag should be 1 or 2 !'
+
+if __name__ == '__main__':
+    tf.app.run()
