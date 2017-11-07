@@ -27,7 +27,7 @@ def text2tfrecords(output_dir, output_name, train, X, Y):
     writer.close()
 
 
-def decode_from_tfrecords(output_dir, output_name, is_train, shuffle, batch_size):
+def decode_from_tfrecords(output_dir, output_name, dim, is_train, shuffle, batch_size):
     _type = 'train.' if is_train else 'test.'
     output_file = os.path.join(output_dir, _type + output_name)
     filename_queue = tf.train.string_input_producer([output_file], num_epochs=None)
@@ -37,7 +37,7 @@ def decode_from_tfrecords(output_dir, output_name, is_train, shuffle, batch_size
                                        features={
                                            # 'X': tf.FixedLenFeature([5000], tf.float32),
                                            # 'Y': tf.FixedLenFeature([], tf.float32)
-                                           'X': tf.FixedLenFeature([5000], tf.int64),
+                                           'X': tf.FixedLenFeature([dim], tf.int64),
                                            'Y': tf.FixedLenFeature([], tf.int64)
                                        })
     x = features['X']
@@ -62,6 +62,7 @@ def decode_from_tfrecords(output_dir, output_name, is_train, shuffle, batch_size
 flags = tf.app.flags
 flags.DEFINE_integer('flag', 1, "Flag to write or read [1 write, 2 read]")
 flags.DEFINE_integer("batch_size", 64, "The size of batch images [64]")
+flags.DEFINE_integer("dim_feature", 5000, "The dimension of feature [5000]")
 flags.DEFINE_string("output_dir", "data/Amazon_review/", "The directory name to save data")
 flags.DEFINE_string("input_dir", "./data/", "The Directory name to input data")
 flags.DEFINE_string("input_name", "books", "The name to input data")
@@ -86,6 +87,7 @@ def main(_):
     elif FLAGS.flag == 2:
         train_data, train_label = decode_from_tfrecords(FLAGS.output_dir,
                                                         output_name=FLAGS.input_name,
+                                                        dim=FLAGS.dim_feature,
                                                         is_train=FLAGS.is_train,
                                                         shuffle=FLAGS.is_shuffle,
                                                         batch_size=FLAGS.batch_size)
