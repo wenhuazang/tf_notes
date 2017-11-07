@@ -17,6 +17,30 @@ convert raw data to tfrecords, which is a binary file for tensorflow. It can tak
 3. return batch data(shuffle or not shuffle)
 
 
+## 2. text2records.py
+
+There are many methods tell us how to convert images to tfrecords, but only a few method says how to convert text to records. So, here show how to do it:
+
+data: Amazon review
+
+### step
+
+2.1 genenrate tfrecords:
+
+python text2records.py —flag=1
+
+2.2 read data:
+
+python text2records.py —flag=2
+
+**note that:** 
+
+Here is the Amazon review data, if you want to use your own text data, you only need to modify here:
+
+(1). load_amazon() function in the main() : load your own data
+
+(2). dim_feature parameter in flags: the your own feature dimension
+
 
 
 
