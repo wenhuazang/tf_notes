@@ -1,6 +1,6 @@
 # Notes for learning tensorflow
 
-### 1. convert_to_tfrecords.py
+### 1.img2tfrecord.py
 
 convert raw data to tfrecords, which is a binary file for tensorflow. It can take good use of the memory, cache etc, and fastly copy, move, read from tensorflow.
 
