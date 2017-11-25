@@ -41,6 +41,14 @@ Here is the Amazon review data, if you want to use your own text data, you only 
 
 (2). dim_feature parameter in flags: the your own feature dimension
 
+## load_pretrain_model
+
+code: load_pretrain_model
+
+when training some complex network(VGG, resnet), we often need to load the pretrain model to init network in order to train fastly. Here is the example for resnet101:
+
+Int the my_model.py is our network structure, and run the main.py to load model by python main.py.
+
 
 
 
