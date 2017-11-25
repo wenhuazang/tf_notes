@@ -152,14 +152,13 @@ if __name__ == '__main__':
     pp.pprint(flags.FLAGS.__flags)
     if not os.path.exists(FLAGS.output_dir):
         os.mkdir(FLAGS.output_dir)
-    print pairs[FLAGS.output_name]
     if flag == 1:
         img2tfrecords2(FLAGS.output_dir, FLAGS.output_name, FLAGS.input_dir,
                        FLAGS.is_train)
     elif flag == 2:
         img_list = os.path.join(FLAGS.input_dir, 'image_list.txt')
         with open(img_list, 'rb') as f:
-            for img, shape in load_visda(FLAGS.input_dir, pairs[FLAGS.output_name], f):
+            for img, shape in load_visda(FLAGS.input_dir, f):
                 print np.asarray(img, np.uint8)
                 plt.imshow(img)
                 plt.show()
